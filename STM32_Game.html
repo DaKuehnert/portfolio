@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<!--
+	Story by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+    @Modified: David Kuehnert
+	Note: Only needed for demo purposes. Delete for production sites.
+-->
+<html>
+	<head>
+		<title>STM32 Game</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="divided">
+
+				
+                <section class="spotlight style1 orient-right content-align-left image-position-center onload-image-fade-in onload-content-fade-left" id="first">
+                    <div class="content">
+                        <header>
+                            <h2>STM32 Game</h2>
+                            <p>Real-Time and Embedded Systems:<br>SWEN-563/CMPE-663/EEE-663</p>
+                        </header>
+                        
+                    </div>
+                    <div class="image">
+                        <img src="images/STM32_Game/STM32_Game_preDemo.gif" alt="" />
+                    </div>
+                </section>
+
+                <section class="wrapper style1">
+                    <div class = "inner">
+                        <ul class="alt">
+                            <li></li>
+
+                            <li>
+                                <h3><strong>Overview:</strong></h3>
+                                <p style="text-align:left;">
+                                    Using the STMCubeMX ide, direct manipulation of the STM32 Discovery board registers achieved to create a simple
+                                    game played through the terminal.  The goal of this game is to use the STM32 on board gyroscope to move a 
+                                    cursor’s position through a 20x40 game field and match position with a target.  The position of this target 
+                                    is randomly generated.  
+                                    <br><br>
+                                    The game consists of 6 levels. Each level having less and less time to match position. A level consists of 5 
+                                    stages. The five stages all have different target positions which a player must match and hold the cursor on the
+                                    target till the time is up. If they are successful they score points for that stage, and repeat till all stages
+                                    are completed. At the end of the level, if no points are scored, the game is over. Otherwise, a player can play 
+                                    through all 6 levels before the game is up.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Analysis / Design:</strong></h3>
+                                <p style="text-align:left;">
+                                    The design of this game can be broken into two overall components: the calculation of absolute angle using gyroscopic 
+                                    reading, and the game board display using serial UART communication.  All game operations are dictated by the game clock 
+                                    which ticks once every 100ms.  This clock is controlled by TIM2 with a prescaler of 7999 (HCLK is 80MHz) and a Period 
+                                    of 1000.  Interrupts are enabled for this timer and the game clock is iterated using the “period elapsed” callback 
+                                    function (HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)).
+                                    <br><br>
+                                    Each game cycle, the current reading from the gyroscope in the X and Y rotational directions are taken into account.  
+                                    If the reading for a particular direction exceeds +/- 500, the rotation is considered significant and so the current 
+                                    cursor position increments either positively or negatively.  This is not exactly an absolute angle as an abrupt change 
+                                    in board angle will not cause a larger movement in the cursor than a less abrupt change.  However, assuming a user 
+                                    changes the board angle without any sharp jerks, this design choice is a usable approximation of absolute angle. Upon 
+                                    accounting for the user movement, a series of checks is completed to determine if it is the end of a stage, end of a 
+                                    level, or even end of a game. If necessary, scores are processed and the respective next stage, next level or end of 
+                                    game display is broadcasted to the user. The game cycles state diagram can be found in the appendix under <b><i>fig. 1</i></b>.
+                                    <br><br>
+                                    In terms of the game board, the usual UART control hardware was enabled in CubeMX.  In order to control this game 
+                                    board, ASCII escape sequences were used.  This allows for actions such as clearing UART terminal (and by extension 
+                                    the game board) as well as changing the position of the terminal cursor.  This second escape sequence is important 
+                                    as it allows the programmer to update the board with as little operations as possible, targeting the specific location 
+                                    which needs to be changed.  The cursor is represented by a “□” character whereas the target is represented as a “⛋” 
+                                    character.  The game cursor also maintains a tail behind it which illustrates its past movement.  This is implemented 
+                                    with three dots: a capital “O” closest to the tail, then a lowercase “o” and finally a dot (“.”).
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Test Plan:</strong></h3>
+                                <p style="text-align:left;">
+                                    There were a number of tests planned to make sure the design was working as intended.  Before the actual testing of 
+                                    the game itself, it would be confirmed with a simple uart print that TIM2 was indeed updating the game clock at the 
+                                    proper speed.  This would be done by using a cell phone timer and checking approximately how long it took the game 
+                                    clock to increment by 20 (should be 2 seconds). 
+                                    <br><br>
+                                    In terms of the game itself a number of tests were planned.  Can the user move the cursor around the game board 
+                                    easily?  This ensured proper reading of the gyroscope.  It was also planned to test whether the user would be able 
+                                    to escape the game board (which they should not be able to do).  If this appeared to work the user would then attempt 
+                                    to play the game.  First they would fail on the first level and ensure proper response.  Then, they would try to complete 
+                                    the game successfully and again ensure that the levels worked and the scored screen was appropriate (it was unlikely 
+                                    that the game could be fully beaten through level 6).  While doing this the user would assure that the target positions 
+                                    appeared to be picked randomly and that the time the user was provided decreased as the level increased.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Project Results:</strong></h3>
+                                <p style="text-align:left;">
+                                    The results were more or less as expected.  The game worked as designed and tests were almost entirely successful.  
+                                    There did appear to be one issue with the game.  If the uart terminal is too large, the game will allow the cursor 
+                                    to escape off the top of the game board.  This however, does not happen for smaller screen sizes.  Otherwise, the 
+                                    game plays as expected, tilting the board causing incremental change in the cursor and the game is easily playable.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Lessons Learned:</strong></h3>
+                                <p style="text-align:left;">
+                                    Escape sequences were a new thing in this project. As mentioned above, being able to update the board without having to 
+                                    reprint a whole new board every iteration made  these sequences critical. At first it was a challenge to get the proper 
+                                    setup for the sequences to work. Many failed attempts occurred before finally achieving proper functionality. For one, 
+                                    the cursor set position sequence does not start at 0,0.  It starts at 1, 2 (x and y respectively). 
+                                    <br><br>
+                                    The gyroscope was an interesting, but cool portion to tackle. The gyroscope was a difficult one to achieve proper 
+                                    functionality. To convert the raw data from angular velocity to angular acceleration proved much difficulty. So a 
+                                    simple solution described in the documentation above was used to overcome the problem. Secondly, at the beginning of 
+                                    the project, the plan was to use freeRTOS and threading. Though for some reason, with freeRTOS, and the gyroscope being 
+                                    implemented, no interrupts could be used. When testing to verify the interrupts using just freeRTOS, or just the 
+                                    gyroscope, no issues emerged, and they worked fine. So ditching the threading was the only effective option.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Appendix:</strong></h3>
+                                    <!-- <div style = "position:relative; left:200px; top:2px;">" background-color:blueviolet;"> -->
+                                <div style = "display: flex; justify-content: center;"> 
+                                    <img src="images/STM32_Game/STM32_GAME_STATE_MACHINE.jpg" alt="" style="float:left">         
+                                </div>
+                                    
+                            </li>
+
+                            <li>
+                                <h3><strong>Demo:</strong></h3>
+                                <div style = "display: flex; justify-content: center;">
+                                    <video autoplay loop muted>
+                                        <source src="images/STM32_Game/STM32_Game_demo_clip.mp4" type="video/mp4" />
+                                    </video>
+                                </div>
+                                <br><br>
+                            </li>
+
+                            <li>
+                                <div style = "display: flex; justify-content: center;">
+                                    <a href="./index.html#portfolio" class="button large wide smooth-scroll-middle"><span class="label">Return to Portfolio</span></a>
+                                </div>
+                            </li>
+
+                        </ul>
+
+
+                    </div>
+                </section>
+            </div>
+            <!-- Scripts -->
+            <script src="assets/js/jquery.min.js"></script>
+            <script src="assets/js/jquery.scrollex.min.js"></script>
+            <script src="assets/js/jquery.scrolly.min.js"></script>
+            <script src="assets/js/browser.min.js"></script>
+            <script src="assets/js/breakpoints.min.js"></script>
+            <script src="assets/js/util.js"></script>
+            <script src="assets/js/main.js"></script>
+    </body>
+</html>

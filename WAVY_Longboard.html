@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<!--
+	Story by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+    @Modified: David Kuehnert
+	Note: Only needed for demo purposes. Delete for production sites.
+-->
+<html>
+	<head>
+		<title>WAVY Longboard</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="divided">
+
+				
+                <section class="spotlight style1 orient-right content-align-left image-position-center onload-image-fade-in onload-content-fade-left" id="first">
+                    <div class="content">
+                        <header>
+                            <h2>WAVY Longboard</h2>
+                            <p>Microcontroller Systems:<br>CPET-251</p>
+                        </header>
+                        
+                    </div>
+                    <div class="image">
+                        <img src="images/WAVY_Longboard/board.jpg" alt="" />
+                    </div>
+                </section>
+
+                <section class="wrapper style1">
+                    <div class = "inner">
+                        <ul class="alt">
+                            <li></li>
+
+                            <li>
+                                <h3><strong>Overview:</strong></h3>
+                                <p style="text-align:left;">
+                                    Growing up seeing longboards fly down hills on youtube was super satisfying. I wanted to try it out, 
+                                    however, the hills in my area are either non-existent, or too steep to learn on. The next best option 
+                                    was an electric powered longboard. In highschool, I realized during a tech class that it would be 
+                                    possible to create the board with an arduino. However, I did not have the knowledge to accomplish 
+                                    this task. During the spring of my second year, I had to take a course on microcontrollers, where we 
+                                    focused on the ATMEGA328p chip in labs. Our final was to create some sort of project that would 
+                                    demonstrate what we had learned throughout the course. I realized that I finally had the skills to 
+                                    build the electric longboard I kept dreaming of having so long ago.
+                                    <br><br>
+                                    Using two Arduino Pro Minis, an electric longboard (also known as WAVY) is split up into two separate 
+                                    systems. Each system has its own individual power supply, and individual Arduino microcontroller. 
+                                    Communication is complete through an nrF24L01 radio to allow transfer of user controls to the board. 
+                                    Both Arduinos are programed using direct manipulation of the ATMEGA328p 
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Analysis / Design:</strong></h3>
+                                <p style="text-align:left;">
+                                    The main system is known as the Board Unit. This is the system placed onto the longboard, and is the 
+                                    “brains” of the operation. The board unit contains superfluous LED lights, a GPS module for speed 
+                                    tracking and distance measuring, and two electronic speed controllers to govern the drive motors. This 
+                                    Arduino is also responsible for storing the odometer value of the board to the EEPROM. 
+                                    <br><br>
+                                    The second system is the remote. A 16x2 LCD panel, a joystick for control, and an RGB indicator light 
+                                    are attached together with the radio and arduino to form a link of communication between user and 
+                                    board. Once connected the remote can be used to control the speed of the board, change the board LED 
+                                    colors, and change the remote display settings. These settings include the ability of displaying the 
+                                    boards current speed, or odometer value of the board.
+                                    <br><br>
+                                    The bare bones of the programming involved basic state machine modeling and simple register changes to 
+                                    display data, or indication lights to the user. This was the case for both boards, each with their own 
+                                    unique cases. However timers had to be set in order to produce the PWM waveform necessary for 
+                                    controlling the ESC’s for the board unit.  The challenging part of the project was the communication 
+                                    between the two arduinos. Example code given from the libraries were used as a starting block, though 
+                                    I could only manage to find a way to send a 8 bit string back and forth between the radios. All the 
+                                    other options were two slow or unreliable, though would have been easier to use. Eventually I 
+                                    discovered I could increase this string to 16 bits, but I still ran into a problem. I am trying to 
+                                    transfer multiple integers, and floats which consume more than two bytes of data per data structure. 
+                                    The fast solution to this was simple math and a good amount of bit shifting/masking to “encode” and 
+                                    “decode” transmission messages. 
+                                </p>
+                                <section>
+                                    <div class="gallery style1 medium lightbox onscroll-fade-in">
+                                        <article>
+                                            <a href="images/WAVY_Longboard/proto_remote.jpg" class="image">
+                                                <img src="images/WAVY_Longboard/proto_remote.jpg"  alt="" />
+                                            </a>
+                                            <div class="caption">
+                                                <h3>Prototype Remote</h3>
+                                                <p>The first generation remote for WAVY longboards. Features a cardboard housing, and 
+                                                    solderless connections.</p>
+                                                <ul class="actions fixed">
+                                                    <li><span class="button small">Details</span></li>
+                                                </ul>
+                                            </div>
+                                        </article>
+                                        <article>
+                                            <a href="images/WAVY_Longboard/proto_full.jpg" class="image">
+                                                <img src="images/WAVY_Longboard/proto_full.jpg" alt="" />
+                                            </a>
+                                            <div class="caption">
+                                                <h3>Bottom Side of the Prototype Board</h3>
+                                                <p>Underneath the longboard are the drive motors, ESCs (electronic speed controllers) and 
+                                                    the LED underglow light strips.
+                                                </p>
+                                                <ul class="actions fixed">
+                                                    <li><span class="button small">Details</span></li>
+                                                </ul>
+                                            </div>
+                                        </article>
+
+                                        <article>
+                                            <a href="images/WAVY_Longboard/proto_board_unit.jpg" class="image">
+                                                <img src="images/WAVY_Longboard/proto_board_unit.jpg" alt="" />
+                                            </a>
+                                            <div class="caption">
+                                                <h3>Prototype Board Unit</h3>
+                                                <p>The on board unit of the wavy longboard. Comprised of an arduino pro mini, 
+                                                    a few project battery packs (12s2p when in combination), an rf radio, and a 
+                                                    kill switch.
+                                                </p>
+                                                <ul class="actions fixed">
+                                                    <li><span class="button small">Details</span></li>
+                                                </ul>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </section>
+                            </li>
+
+                            <li>
+                                <h3><strong>Test Plan:</strong></h3>
+                                <p style="text-align:left;">
+                                    After a few weeks of programming, wiring and rewiring, the system approached completion. Along the way 
+                                    the programming and building was done in a methodical manner. This allowed for individual testing and 
+                                    debugging of smaller systems, which once completed were used in the overall design. Once everything came 
+                                    together, a few minor kinks were worked out, and testing with the board upside down (no rider) took place.
+                                    <br><br>
+                                    Going through the state machine cycles, and testing controls, everything seemed to be functioning 
+                                    properly. The ESC’s used for this build have internal “specialty” modes such as braking, and changing 
+                                    start up acceleration. To change the settings, the remote would have to be able to input specific 
+                                    sequences. The arduino build remote I made was perfectly capable of accomplishing this task.
+                                    <br><br>
+                                    With confidence that the board would fully function, I almost got WAVY working. I was able to reach a 
+                                    top of 15 MPH on two separate occasions, past this point I did not feel very comfortable due to my lack 
+                                    of skating skills, though I wasn’t at full throttle. The board was taken out on several separate rides, 
+                                    making minor adjustments to code in between.
+
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Project Results:</strong></h3>
+                                <p style="text-align:left;">
+                                    The “final” prototype board I would consider a success, but, like always, I have a few ideas for 
+                                    improvements. I am able to ride around on the board without issues until I hit a bump in the road. The 
+                                    justling of the components cause a minor disconnect in the jumper wires causing temporary disconnect 
+                                    of the arduinos. When this occurs, the board will continue supplying the last known command to the 
+                                    motors, and it will just keep going, even if you want to stop. 
+                                    <br><br>
+                                    A two step solution was used to fix this problem. The first was to design a custom pcb board for both 
+                                    the remote and board unit. This way everything is hard soldered together and bumps should no longer be 
+                                    of any issue. The second fix was a backup software solution used as a safety net. If the remote 
+                                    disconnects, make the board stop. I quickly came to realize that hard braking  even at 5 mph isn’t the 
+                                    smartest idea. So this code became, if disconnected, slowly ramp down speed to a stop. Giving me an 
+                                    extra day without any broken bones.
+                                    <br><br>
+                                    Other future improvements include making a full housing for the board unit and remote. As currently, 
+                                    being in early stages, everything is secured in boxes with masking tape. A bluetooth module to connect 
+                                    to my iphone, giving me real-time intrinsics for a wider range of testing. Additionally swapping over 
+                                    to a smaller radio, or trying a completely different microprocessor. The radio I used was great! 
+                                    However, it was far too powerful for this application, and a smaller, less conspicuous radio could have 
+                                    been used. The xbee microcontroller could offer as a complete replacement. As these are full 
+                                    microcontrollers with a built in radio, meaning, no worries of accidental loss of connection due to 
+                                    wiring. 
+                                </p>
+                                <section>
+                                    <div class="gallery style1 medium lightbox onscroll-fade-in">
+                                        <article>
+                                            <a href="images/WAVY_Longboard/pcb_remote.jpg" class="image">
+                                                <img src="images/WAVY_Longboard/pcb_remote.jpg"  alt="" />
+                                            </a>
+                                            <div class="caption">
+                                                <h3>PCB Remote Design</h3>
+                                                <p>Created on KiCAD, this is the custom PCB design for the remote control.
+                                                    It contains all necessary ports to build the full controller.
+                                                </p>
+                                                <ul class="actions fixed">
+                                                    <li><span class="button small">Details</span></li>
+                                                </ul>
+                                            </div>
+                                        </article>
+                                        <article>
+                                            <a href="images/WAVY_Longboard/pcb_board_unit.jpg" class="image">
+                                                <img src="images/WAVY_Longboard/pcb_board_unit.jpg" alt="" />
+                                            </a>
+                                            <div class="caption">
+                                                <h3>PCB Board Unit Design</h3>
+                                                <p> Designed in KiCAD, this is the fully functioning PCB design needed to build
+                                                    a full on board unit for the WAVY Longboard
+                                                </p>
+                                                <ul class="actions fixed">
+                                                    <li><span class="button small">Details</span></li>
+                                                </ul>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </section>
+
+                            </li>
+
+                            <li>
+                                <h3><strong>Lessons Learned:</strong></h3>
+                                <p style="text-align:left;">
+                                    Debugging and designing in sections is a MUST! Previous coding experiences I have had an issue of coding 
+                                    everything at once, and debugging at the end. Mentally it was easier for me to spew out a few hours 
+                                    worth of code. The issue is I would be digging for a stupid little bug for days if I do that. Instead, I 
+                                    have been getting better at breaking down the project. Working in small portions that can be blocked 
+                                    together at the end. All the small portions are super easy to debug, and when the time comes to it, the 
+                                    blocks fall right into place, and the bugs are then apparent.
+                                    <br><br>
+                                    The process as a whole seemed to take longer, though in the long run, time and stress was conserved. This 
+                                    was the first project I was able to successfully  break down into small chunks, and I see the importance 
+                                    of doing so. Recently I’d break it into chunks, but I’d bite off more than I can chew. Using this process 
+                                    worked both for hardware and software design of this project, and I’ll definitely continue to use this 
+                                    method in the future. 
+
+                                </p>
+                            </li>
+
+
+                            <li>
+                                <div style = "display: flex; justify-content: center;">
+                                    <a href="./index.html#portfolio" class="button large wide smooth-scroll-middle"><span class="label">Return to Portfolio</span></a>
+                                </div>
+                            </li>
+
+                        </ul>
+
+
+                    </div>
+                </section>
+            </div>
+            <!-- Scripts -->
+            <script src="assets/js/jquery.min.js"></script>
+            <script src="assets/js/jquery.scrollex.min.js"></script>
+            <script src="assets/js/jquery.scrolly.min.js"></script>
+            <script src="assets/js/browser.min.js"></script>
+            <script src="assets/js/breakpoints.min.js"></script>
+            <script src="assets/js/util.js"></script>
+            <script src="assets/js/main.js"></script>
+    </body>
+</html>

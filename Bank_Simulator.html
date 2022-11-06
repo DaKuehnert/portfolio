@@ -1,0 +1,251 @@
+<!DOCTYPE HTML>
+<!--
+	Story by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+    @Modified: David Kuehnert
+	Note: Only needed for demo purposes. Delete for production sites.
+-->
+<html>
+	<head>
+		<title>Bank Simulator</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="divided">
+
+				
+                <section class="spotlight style1 orient-right content-align-left image-position-left onload-image-fade-in onload-content-fade-right" id="first">
+                    <div class="content">
+                        <header>
+                            <h2>Bank Simulator</h2>
+                            <p>Real-Time and Embedded Systems:<br>SWEN-563/CMPE-663/EEE-663</p>
+                            <p>In collaboration with Kevin Gates</p>
+                        </header>
+                        
+                    </div>
+                    <div class="image">
+                        <img src="images/Bank_Simulator/Bank_Simulator_Code_Snippet.jpg" alt="" />
+                    </div>
+                </section>
+
+                <section class="wrapper style1">
+                    <div class = "inner">
+                        <ul class="alt">
+                            <li></li>
+
+                            <li>
+                                <h3><strong>Overview:</strong></h3>
+                                <p style="text-align:left;">
+                                    Using a bare-metal (no-operating system) program, direct manipulation of the STM32 Discovery board 
+                                    registers and implementation of the FreeRTOS environment, a bank emulator was developed. The simulation 
+                                    represented a bank in real time with several tellers serving customers that arrived at the bank. 
+                                    <br><br>
+                                    The customers were randomly generated every one to four simulation minutes, and placed into the queue. 
+                                    Upon hitting the front of the queue, one of three tellers would serve the customer. The time it took for 
+                                    a customer to be served was represented by a random value between 30 seconds and eight simulation minutes. 
+                                    The bank ran for seven simulated hours, and the tellers were allowed to take humane intermittent breaks.
+                                    <br><br>  
+                                    Upon completion of the simulation, metrics were gathered and displayed to the user. These metrics included 
+                                    the number of customers who entered the bank and how many each teller served. The average and maximum time 
+                                    a customer waits in a queue and with a given teller. The average and maximum time a teller sits idle. The 
+                                    maximum transaction time for each teller, and the maximum depth of all the customer queue. Additionally, 
+                                    metrics for the number of breaks for each teller, average break time, longest break time, and shortest 
+                                    break time is included for the graduate extension.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Analysis / Design:</strong></h3>
+                                <p style="text-align:left;">
+                                    The first step was to create a few functional threads to get an idea of how FreeRTOS works. Using the 
+                                    STMCube IDE, the creation was relatively simple. One chooses the stack size, and name, and the thread 
+                                    is generated for you. Four threads were created. One for each teller, and one main thread to compute 
+                                    the final results for display. Once a simple print was successfully displayed by each individual 
+                                    thread, the process to get the mutex working began.
+                                    <br><br>
+                                    The mutex, as was the thread, were convenient to produce, as the IDE did all the heavy work. In the 
+                                    main configuration, a mutex was created to handle the run data collection. This run data would store 
+                                    all real time information of the current simulation. To keep threads from trying to simultaneously 
+                                    change the run data, a mutex was going to be needed. Trying to get a simplified mutex to work was the 
+                                    first discovery of issues we had when trying to complete this lab. When trying to have a value 
+                                    incremented within the mutex one at a time by an individual thread, only one thread was allowed to 
+                                    access the mutex. Though confident that the code was right, we were unsure of what the issue was. As 
+                                    talked about later, an increase in stack size of the thread solved this issue.
+                                    <br><br>
+                                    The final step before implementing our project design was to create a queue. Using the queue creation 
+                                    from the FreeRTOS inside the main configuration window allowed for this to be done quick and 
+                                    efficiently. Instead of creating a linked list using pointers and arrays, the FreeRTOS queue has 
+                                    everything necessary already implemented. Enqueuing and Dequeuing was all a matter of calling a premade 
+                                    Get and Put function. The second benefit of using the premade queue was that it had a built in mutex. 
+                                    So, no need to fuss around with getting a second mutex up and running properly. A thread will just wait 
+                                    till it has the flag to access the queue and continue with its process.
+                                    <br><br>
+                                    Now that all individual components were able to be developed and ran successfully on their own, the 
+                                    project design (found in the appendix <b><i>fig. 1</i></b>) was able to be developed. Using a 100ms interrupts to 
+                                    simulate one minute bank time, a runtime counter is started in the main before starting each thread. 
+                                    Once the threads begin, the Tellers will start trying to pull customers from the queue, though at this 
+                                    point none have been generated.
+                                    <br><br>
+                                    The main thread (<b><i>fig. 2</i></b>) runs through a while loop upon initiation and won’t stop running until seven 
+                                    simulated hours are up. While in the while loop, it creates a customer, place’s it in the queue and 
+                                    then creates a random wait time to determine how long it should wait till the next customer needs to 
+                                    be created. Once the simulation time is up, it exits the loop and waits for the individual teller 
+                                    threads to finish up processing all the customers in queue. At this point the thread calculates and 
+                                    print’s out all pertinent information for the project statistics, and the code completes.
+                                    <br><br>
+                                    The three teller threads (<b><i>fig. 3</i></b>) have identical code with variation in variable names. The concept 
+                                    behind the teller thread is if there are customers in the queue and the bank is still running, the 
+                                    thread will be up and going. Inside the conditional while loop, three states exist. One for the teller 
+                                    being Idle, one for when it is busy and one for when it is on break. During its idle state, the teller 
+                                    handles adjusting metrics, trying to pull a new customer, or checking if it is time for a break. The 
+                                    idle state is left if a new customer appears in the queue for them to serve or the allotted random 
+                                    wait time between thirty to sixty minutes is up meaning it is now headed to the break state. Upon 
+                                    completion of serving all customers and the bank is now closed, the thread acquires the run data mutex, 
+                                    uploads all of its individual statistics and enters an infinite null loop representing the fact it no 
+                                    longer exists.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Test Plan:</strong></h3>
+                                <p style="text-align:left;">
+                                    The first test completed for this project was a verification that each individual component worked. That is, 
+                                    threads could be run by themselves, mutex’s could be acquired by one and then multiple threads, and queues 
+                                    could be properly implemented. Upon successful verification of this, the project was allowed to move forward.
+                                    <br><br>
+                                    The second test was getting a single thread to run a simplified bank environment. That is the bank time was 
+                                    shorter, less customers were generated with at a constant rate, and the teller did not include breaks. The 
+                                    data pulled from the test verified that the teller was working properly, and the data being produced was of 
+                                    accuracy. No problems were discovered here so an addition of breaks was added. No noticeable errors occurred 
+                                    at the end of testing a single teller and main.  
+                                    <br><br>
+                                    The third test was to implement all three tellers with no breaks, and no random values. This way data being 
+                                    produced could be verified. Problems of stack size and heap size were discovered at this test, and for a 
+                                    while only two of three threads would run properly. Once fully functioning without random variables, the 
+                                    test was determined complete.
+                                    <br><br> 
+                                    The final test was to introduce random variables. Upon successful completion of this test would mean the 
+                                    project is complete and ready for submission. Though this is where we got stuck and ran into more issues. 
+                                    An introduction of random variables resulted in a data that was clearly far from being accurate. So, a 
+                                    reduction of a teller was done for testing. The data printed out was reasonable except for a few notable 
+                                    exceptions. Typically, it was the same variable that were seemingly off, but this would very simulation 
+                                    to simulation. When reduced down to a single teller with random variables, the data was accurate with no 
+                                    noticeable flaws.
+
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Project Results:</strong></h3>
+                                <p style="text-align:left;">
+                                    The final result of the project was not up to specifications. As mentioned in the paragraph above, running a 
+                                    single teller, all statistical data printed out was accurate with no errors. When two tellers were run, the 
+                                    simulation worked with a very minute number of flaws that happened randomly to various variables. When all 
+                                    three tellers (as per project specifications) were run, the resulting data was noticeably inaccurate across 
+                                    the board.
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Lessons Learned:</strong></h3>
+                                <p style="text-align:left;">
+                                    This project taught several lessons on the FreeRTOS environment. The first was proper creation and handling 
+                                    of threads and mutex’s. Not knowing if the creation by the IDE was accurate, much debugging was done to verify 
+                                    that these were working properly. Multiple problems were discovered along the way that had nothing to do with 
+                                    the creation, but did result in useful knowledge used as solution in later parts of the lab. 
+                                    <br><br>
+                                    The first thing discovered for threads was the priority level. Within the Cube IDE, if the priority levels 
+                                    were set at different levels (low, medium, high) not all threads would run. Initially, our main thread was 
+                                    set to medium priority, and our teller threads were set to low. Compilation of the software would result in 
+                                    the main thread being allowed to run, and only the first of three tellers we had created. When setting the 
+                                    priorities to all medium, the threads were able to execute properly.
+                                    <br><br>
+                                    The second discovery was when the mutex was not able to be accessed by all of the threads. This one was very 
+                                    confusing as only one teller could ever access the mutex and configure the data, while the other threads sat 
+                                    seemingly idle. Each thread was identical other than their name and variable of modification inside the mutex, 
+                                    so no solution was immediately clear. Upon initializing the threads in a different order, whatever the first 
+                                    thread created was would be the thread allowed to access the mutex. The solution to this error was discovered 
+                                    to be the stack sizes of the threads. When increased from 128 bits to 256 bits for all threads, the mutex was 
+                                    able to be properly acquired and modified by all threads.
+                                    <br><br>
+                                    At one point in our program, data had started to become very inaccurate. What was strange was the only thing 
+                                    that had been changed was the addition of a print statement. When the print statement was removed the program 
+                                    may work again but would randomly start to produce inaccurate data after a few more tests were run and a few 
+                                    lines were changed. The inaccurate data was inconsistent and was not able to be tied to a single issue. Though 
+                                    this time it was known not to be stack sizes, as each individual thread still ran without an issue. The 
+                                    solution was an increased in heap size allocated by the program. In the main configuration window of the Cube 
+                                    IDE, under the freeRTOS tab, a convenient display of data is shown. The amount of heap size allocated is 
+                                    available to be changed, and the amount currently being used by the given code is shown. We increased this 
+                                    from three thousand bits to five thousand and noticed that we no longer had random data being displayed when 
+                                    it shouldn’t. 
+                                    <br><br>
+                                    The final discovery made was the addition of random variables requires a hefty increase in stack size. This 
+                                    makes perfect since, though was not something we thought of at first. We completed the program without using 
+                                    random variables so that we could verify the collection of data. Once we verified accuracy, the random variables 
+                                    were created, and random parts of the program would cause errors. After much digging, we increased the stack 
+                                    size of each thread to 384 bits, and the program started running normal again.
+                                    <br><br>
+                                    With all that we learned, none of these were solutions to fixing our final version of our project. Since 
+                                    we could not get the simulation to function properly with all three tellers, we tried to adjust the stack 
+                                    memory of the threads and had no luck. When checking the allocated heap memory, clearly it was shown we had 
+                                    more than enough available, so checks were done to decrease the heap as well as increasing the heap. Neither 
+                                    worked out and no solution could be discovered as to why the introduction of a second and third teller would 
+                                    significantly change the resulting data output.
+
+                                </p>
+                            </li>
+
+                            <li>
+                                <h3><strong>Appendix:</strong></h3>
+                                    <!-- <div style = "position:relative; left:200px; top:2px;">" background-color:blueviolet;"> -->
+                                <div style = "display: flex; justify-content: center;"> 
+                                    <img src="images/Bank_Simulator/append_fig_1.jpg" alt="" style="float:left">         
+                                </div>
+                                <br><br><br>
+                                <div style = "display: flex; justify-content: center;"> 
+                                    <img src="images/Bank_Simulator/append_fig_2.jpg" alt="" style="float:left">         
+                                </div>
+                                <br><br><br><br><br>
+                                <div style = "display: flex; justify-content: center;"> 
+                                    <img src="images/Bank_Simulator/append_fig_3.jpg" alt="" style="float:left">         
+                                </div>
+                                <br><br><br>     
+                            </li>
+
+                            <li>
+                                <div style = "display: flex; justify-content: center;">
+                                    <a href="./index.html#portfolio" class="button large wide smooth-scroll-middle"><span class="label">Return to Portfolio</span></a>
+                                </div>
+                            </li>
+
+                            <!-- <li>
+                                <h3><strong>Demo:</strong></h3>
+                                <div style = "display: flex; justify-content: center;">
+                                    <video autoplay loop muted>
+                                        <source src="images/STM32_Game/STM32_Game_demo_clip.mp4" type="video/mp4" />
+                                    </video> 
+                                </div>
+                            </li> -->
+
+                        </ul>
+
+
+                    </div>
+                </section>
+            </div>
+             <!-- Scripts -->
+            <script src="assets/js/jquery.min.js"></script>
+            <script src="assets/js/jquery.scrollex.min.js"></script>
+            <script src="assets/js/jquery.scrolly.min.js"></script>
+            <script src="assets/js/browser.min.js"></script>
+            <script src="assets/js/breakpoints.min.js"></script>
+            <script src="assets/js/util.js"></script>
+            <script src="assets/js/main.js"></script>
+    </body>
+</html>
